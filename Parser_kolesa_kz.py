@@ -3,15 +3,16 @@ import ast
 from bs4 import BeautifulSoup
 import csv
 import telebot
+import os
 import unidecode
-HEADER = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36','accept':'*/*'}#making sure that website will not take us for bot
 
+PORT = int(os.environ.get('PORT', 5000))
+HEADER = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36','accept':'*/*'}#making sure that website will not take us for bot
 FILE='cars.csv'
 
 def my_html(url, params=None):
     r = rq.get(url,headers=HEADER,params=params)
     return r
-
 def parse_content(html):
     soup = BeautifulSoup(html,'html.parser')
     div = soup.find_all('div',class_="row vw-item list-item a-elem")
@@ -47,15 +48,13 @@ def parse_content(html):
             i['price'] = unidecode.unidecode(i['price'])
             i['price']=(i['price'].replace(" ",""))
             int(i['price'])
-    print(cars)
-
     return cars
+
 
 def save_file_and_compare(items,path1,path2,chatid):
     with open(path1,mode='w') as file1:
-        writer=csv.writer(file1,dialect='excel',delimiter=',')
+        writer=csv.writer(file,dialect='excel',delimiter=',')
         writer.writerow(['make','model','price','year','region','city'])
-        lowest_price1=20**6;
         for item in items:
             writer.writerow([item['make'],item['model'],item['price'],item['year'],item['region'],item['city']])
             if(lowest_price1>item['price']):
@@ -63,7 +62,6 @@ def save_file_and_compare(items,path1,path2,chatid):
 
     with open(path2,mode='r') as file2:
         reader=csv.DictReader(file2)
-        lowest_price2=20**6;
         for row in reader:
             if(lowest_price2>row['price']):
                 lowest_price2=row
@@ -74,14 +72,15 @@ def parsing(URL,chatid):
     html = my_html(URL)
     if html.status_code ==200: #it means that we successfully reached page
         cars = parse_content(html.text)
-        save_file_and_compare(cars,FILE)
+        save_file(cars,FILE)
         bot.send_message(chatid,"Done!")
     else:
-        bot.send_message(chatid,"Error") 
+        bot.send_message(chatid,"Error")
 
 TOKEN ='1672802092:AAE1F97xVEUrJjSCYoev5RukbVMnpCFmQNg'
 
 bot = telebot.TeleBot(TOKEN)
+
 @bot.message_handler(commands=['start'])
 def f_start(message):
     bot.reply_to(message,'Hello, I am a parsing bot! If this is your first time enter /help')
@@ -98,5 +97,8 @@ def f_url(message):
         url=(message).text
         chatid = message.chat.id
         parsing(url,chatid)
-
-bot.polling(interval=2)
+        
+updater.start_webhook(listen="0.0.0.0",
+                          port=int(PORT),
+                          url_path=TOKEN)
+updater.bot.setWebhook('https://enigmatic-peak-19607.herokuapp.com/' + TOKEN)
