@@ -5,6 +5,10 @@ import csv
 import telebot
 import os
 import unidecode
+
+TOKEN ='1672802092:AAE1F97xVEUrJjSCYoev5RukbVMnpCFmQNg'
+bot = telebot.TeleBot(TOKEN)
+
 HEADER = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36','accept':'*/*'}#making sure that website will not take us for bot
 FILE='cars.csv'
 
@@ -77,9 +81,7 @@ def parsing(URL,chatid):
     else:
         bot.send_message(chatid,"Error")
 
-TOKEN ='1672802092:AAE1F97xVEUrJjSCYoev5RukbVMnpCFmQNg'
 
-bot = telebot.TeleBot(TOKEN)
 
 @bot.message_handler(commands=['start'])
 def f_start(message):
