@@ -3,7 +3,6 @@ import ast
 from bs4 import BeautifulSoup
 import csv
 import telebot
-from telegram.ext import Updater 
 import os
 import unidecode
 
