@@ -9,10 +9,12 @@ import unidecode
 PORT = int(os.environ.get('PORT', 5000))
 HEADER = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36','accept':'*/*'}#making sure that website will not take us for bot
 FILE='cars.csv'
+FILE2='cars2.csv'
 
 def my_html(url, params=None):
     r = rq.get(url,headers=HEADER,params=params)
     return r
+
 def parse_content(html):
     soup = BeautifulSoup(html,'html.parser')
     div = soup.find_all('div',class_="row vw-item list-item a-elem")
@@ -48,31 +50,47 @@ def parse_content(html):
             i['price'] = unidecode.unidecode(i['price'])
             i['price']=(i['price'].replace(" ",""))
             int(i['price'])
+    #print(cars)
+
     return cars
 
-
 def save_file_and_compare(items,path1,path2,chatid):
-    with open(path1,mode='w') as file1:
-        writer=csv.writer(file,dialect='excel',delimiter=',')
-        writer.writerow(['make','model','price','year','region','city'])
-        for item in items:
-            writer.writerow([item['make'],item['model'],item['price'],item['year'],item['region'],item['city']])
-            if(lowest_price1>item['price']):
-                lowest_price1=item
 
-    with open(path2,mode='r') as file2:
-        reader=csv.DictReader(file2)
-        for row in reader:
-            if(lowest_price2>row['price']):
-                lowest_price2=row
-    if(lowest_price1['price']<lowest_price2['price']):
-        bot.send_message(chatid,"I found a new car: "+"https://kolesa.kz"+lowest_price1['url'])
+    with open(path1,mode='w') as file1:
+        writer=csv.writer(file1,dialect='excel',delimiter=',')
+        writer.writerow(['make','model','price','year','region','city'])
+        lowest_price1=20**6;
+        for item in items:
+            try:
+                writer.writerow([item['make'],item['model'],item['price'],item['year'],item['region'],item['city'],item['link']])
+                if(lowest_price1>int(item['price'])):
+                    lowest_price1=int(item['price'])
+                    lowest_price1_place=item
+            except:
+                writer.writerow([item['price'],item['link']])
+                if(lowest_price1>int(item['price'])):
+                    lowest_price1=int(item['price'])
+                    lowest_price1_place=item
+    try:
+
+        with open(path2,mode='r') as file2:
+            reader=csv.DictReader(file2)
+            lowest_price2=20**6;
+            for row in reader:
+                if(lowest_price2>int(row['price'])):
+                    lowest_price2=int(row['priec'])
+                    lowest_price2_place=row
+        if(lowest_price1['price']<lowest_price2['price']):
+            bot.send_message(chatid,"I found a new car: "+"https://kolesa.kz"+lowest_price1_place['link'])
+    except:
+        pass
+
 
 def parsing(URL,chatid):
     html = my_html(URL)
     if html.status_code ==200: #it means that we successfully reached page
         cars = parse_content(html.text)
-        save_file(cars,FILE)
+        save_file_and_compare(cars,FILE,FILE2,chatid)
         bot.send_message(chatid,"Done!")
     else:
         bot.send_message(chatid,"Error")
@@ -80,7 +98,6 @@ def parsing(URL,chatid):
 TOKEN ='1672802092:AAE1F97xVEUrJjSCYoev5RukbVMnpCFmQNg'
 
 bot = telebot.TeleBot(TOKEN)
-
 @bot.message_handler(commands=['start'])
 def f_start(message):
     bot.reply_to(message,'Hello, I am a parsing bot! If this is your first time enter /help')
@@ -97,7 +114,7 @@ def f_url(message):
         url=(message).text
         chatid = message.chat.id
         parsing(url,chatid)
-        
+
 updater.start_webhook(listen="0.0.0.0",
                           port=int(PORT),
                           url_path=TOKEN)
