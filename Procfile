@@ -1,1 +1,1 @@
-web: python Parser_kolesa_kz.py 
+worker: python Parser_kolesa_kz.py 
