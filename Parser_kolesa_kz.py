@@ -3,10 +3,10 @@ import ast
 from bs4 import BeautifulSoup
 import csv
 import telebot
+from telegram.ext import Updater 
 import os
 import unidecode
 
-PORT = int(os.environ.get('PORT', 5000))
 HEADER = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36','accept':'*/*'}#making sure that website will not take us for bot
 FILE='cars.csv'
 FILE2='cars2.csv'
@@ -115,7 +115,4 @@ def f_url(message):
         chatid = message.chat.id
         parsing(url,chatid)
 
-updater.start_webhook(listen="0.0.0.0",
-                          port=int(PORT),
-                          url_path=TOKEN)
-updater.bot.setWebhook('https://enigmatic-peak-19607.herokuapp.com/' + TOKEN)
+bot.polling(none_stop=True)
