@@ -96,7 +96,7 @@ def parsing(URL,chatid):
         bot.send_message(chatid,"Error")
 
 TOKEN ='1672802092:AAE1F97xVEUrJjSCYoev5RukbVMnpCFmQNg'
-
+updater = Updater(TOKEN, use_context=True)
 bot = telebot.TeleBot(TOKEN)
 @bot.message_handler(commands=['start'])
 def f_start(message):
